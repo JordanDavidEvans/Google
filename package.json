@@ -1,0 +1,13 @@
+{
+  "name": "google-worker",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo 'no tests'"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "wrangler": "^3.0.0"
+  }
+}
