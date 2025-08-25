@@ -7,7 +7,7 @@ compatibility_date = "2024-05-01"
 # GOOGLE_CLIENT_SECRET = ""
 # allowed to define environment variables externally
 
-[kv_namespaces]
 # Example KV binding for token storage
+# [[kv_namespaces]]
 # binding = "TOKENS"
 # id = "00000000000000000000000000000000000"
