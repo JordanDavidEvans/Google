@@ -1,6 +1,9 @@
 name = "google-worker"
-main = "dist/index.mjs"
+main = "dist/index.js"
 compatibility_date = "2024-05-01"
+
+[build]
+command = "npm run build"
 
 [vars]
 # GOOGLE_CLIENT_ID = ""

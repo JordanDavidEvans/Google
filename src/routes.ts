@@ -33,7 +33,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
     const redirect = new URL('/api/oauth/callback', url.origin).toString();
     if (!code) return json({ success: false, summary: 'Missing code' }, 400);
     try {
-      const tokens = await exchangeCode(env, code, redirect);
+      const tokens = (await exchangeCode(env, code, redirect)) as { access_token: string; refresh_token: string; expires_in: number };
       await store.put('user', {
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
@@ -48,7 +48,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
   if (url.pathname === '/api/verify' && request.method === 'POST') {
     const token = await store.get('user');
     if (!token) return json({ success: false, summary: 'Not authenticated' }, 401);
-    const { site, type } = await request.json();
+    const { site, type } = (await request.json()) as { site: string; type: 'INET_DOMAIN' | 'URL' };
     const res = await getVerificationToken(token.access_token, site, type);
     return json(res);
   }
@@ -56,7 +56,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
   if (url.pathname === '/api/confirm' && request.method === 'POST') {
     const token = await store.get('user');
     if (!token) return json({ success: false, summary: 'Not authenticated' }, 401);
-    const { site, type } = await request.json();
+    const { site, type } = (await request.json()) as { site: string; type: 'INET_DOMAIN' | 'URL' };
     const res = await verifySite(token.access_token, site, type);
     return json(res);
   }
@@ -64,7 +64,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
   if (url.pathname === '/api/property' && request.method === 'POST') {
     const token = await store.get('user');
     if (!token) return json({ success: false, summary: 'Not authenticated' }, 401);
-    const { site } = await request.json();
+    const { site } = (await request.json()) as { site: string };
     const res = await addProperty(token.access_token, site);
     return json(res);
   }
@@ -72,7 +72,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
   if (url.pathname === '/api/sitemap' && request.method === 'POST') {
     const token = await store.get('user');
     if (!token) return json({ success: false, summary: 'Not authenticated' }, 401);
-    const { site, sitemap } = await request.json();
+    const { site, sitemap } = (await request.json()) as { site: string; sitemap: string };
     const res = await submitSitemap(token.access_token, site, sitemap);
     return json(res);
   }
@@ -80,7 +80,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
   if (url.pathname === '/api/url' && request.method === 'POST') {
     const token = await store.get('user');
     if (!token) return json({ success: false, summary: 'Not authenticated' }, 401);
-    const { site, url: target } = await request.json();
+    const { site, url: target } = (await request.json()) as { site: string; url: string };
     const res = await inspectUrl(token.access_token, site, target);
     return json(res);
   }
@@ -88,7 +88,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
   if (url.pathname === '/api/reindex' && request.method === 'POST') {
     const token = await store.get('user');
     if (!token) return json({ success: false, summary: 'Not authenticated' }, 401);
-    const { url: target, eligible } = await request.json();
+    const { url: target, eligible } = (await request.json()) as { url: string; eligible: boolean };
     if (!eligible) {
       return json({ success: false, summary: 'This content is not eligible for instant indexing. Keep sitemaps fresh and use internal links.' }, 400);
     }
