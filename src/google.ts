@@ -53,8 +53,8 @@ export async function refresh(env: Env, refresh_token: string) {
 // with high level summaries and raw details. Real workers should handle errors
 // and retries; here we provide simplified versions.
 
-export async function getVerificationToken(accessToken: string, site: string, type: 'INET_DOMAIN' | 'URL'): Promise<ApiResponse> {
-  const method = type === 'INET_DOMAIN' ? 'DNS_TXT' : 'META';
+export async function getVerificationToken(accessToken: string, site: string, type: 'DOMAIN' | 'URL_PREFIX'): Promise<ApiResponse> {
+  const method = type === 'DOMAIN' ? 'DNS_TXT' : 'META';
   const res = await fetch(`${SITEVERIFICATION}/token?verificationMethod=${method}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -65,8 +65,8 @@ export async function getVerificationToken(accessToken: string, site: string, ty
   return { success: true, summary: 'Token issued', details: data };
 }
 
-export async function verifySite(accessToken: string, site: string, type: 'INET_DOMAIN' | 'URL'): Promise<ApiResponse> {
-  const method = type === 'INET_DOMAIN' ? 'DNS_TXT' : 'META';
+export async function verifySite(accessToken: string, site: string, type: 'DOMAIN' | 'URL_PREFIX'): Promise<ApiResponse> {
+  const method = type === 'DOMAIN' ? 'DNS_TXT' : 'META';
   const res = await fetch(`${SITEVERIFICATION}/webResource?verificationMethod=${method}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },

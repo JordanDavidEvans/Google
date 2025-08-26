@@ -88,13 +88,13 @@ input { margin-right: 0.5rem; }
       const siteTitle = document.createElement('h2');
       siteTitle.textContent = 'Verify site';
       const typeSelect = document.createElement('select');
-      const optDomain = new Option('Domain (DNS TXT)', 'INET_DOMAIN');
-      const optUrl = new Option('URL (HTML tag)', 'URL');
+      const optDomain = new Option('Domain (DNS TXT)', 'DOMAIN');
+      const optUrl = new Option('URL prefix (HTML tag)', 'URL_PREFIX');
       typeSelect.append(optDomain, optUrl);
       const siteInput = document.createElement('input');
       siteInput.placeholder = 'example.com';
       typeSelect.onchange = () => {
-        siteInput.placeholder = typeSelect.value === 'INET_DOMAIN' ? 'example.com' : 'https://example.com/';
+        siteInput.placeholder = typeSelect.value === 'DOMAIN' ? 'example.com' : 'https://example.com/';
       };
       siteStep.append(siteTitle, typeSelect, siteInput);
 
@@ -105,13 +105,13 @@ input { margin-right: 0.5rem; }
         const site = siteInput.value.trim();
         const type = typeSelect.value;
         if (!site) return alert('Enter site');
-        const method = type === 'INET_DOMAIN' ? 'DNS_TXT' : 'META';
+        const method = type === 'DOMAIN' ? 'DNS_TXT' : 'META';
         const res = await api('https://www.googleapis.com/siteVerification/v1/token?verificationMethod=' + method, {
           method: 'POST',
           body: JSON.stringify({ site: { identifier: site, type } })
         });
         if (res.token) {
-          tokenOut.textContent = type === 'INET_DOMAIN'
+          tokenOut.textContent = type === 'DOMAIN'
             ? res.token
             : '<meta name="google-site-verification" content="' + res.token + '">';
         } else {
@@ -126,7 +126,7 @@ input { margin-right: 0.5rem; }
         const site = siteInput.value.trim();
         const type = typeSelect.value;
         if (!site) return alert('Enter site');
-        const method = type === 'INET_DOMAIN' ? 'DNS_TXT' : 'META';
+        const method = type === 'DOMAIN' ? 'DNS_TXT' : 'META';
         const res = await api('https://www.googleapis.com/siteVerification/v1/webResource?verificationMethod=' + method, {
           method: 'POST',
           body: JSON.stringify({ site: { identifier: site, type } })
