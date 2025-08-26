@@ -1,4 +1,6 @@
-export function renderUI(): Response {
+import { Env } from './types';
+
+export function renderUI(env: Env): Response {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,8 +18,8 @@ input { margin-right: 0.5rem; }
   <p>This helper walks you through connecting your site to Google Search Console without a separate API layer.</p>
   <div id="app"></div>
   <script type="module">
-    const CLIENT_ID = 'YOUR_CLIENT_ID';
-    const CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
+    const CLIENT_ID = '${env.GOOGLE_CLIENT_ID}';
+    const CLIENT_SECRET = '${env.GOOGLE_CLIENT_SECRET}';
     const REDIRECT_URI = window.location.origin + '/';
 
     async function exchange(code) {
