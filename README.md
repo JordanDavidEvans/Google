@@ -14,7 +14,7 @@ It is deliberately minimal and friendly. Each step returns human‑readable summ
 
 ## Using
 
-Visit the worker URL. The page invites you to connect a Google account. After OAuth completes the API endpoints become available:
+Visit the worker URL. The page invites you to connect a Google account. After OAuth completes, simple controls appear to fetch a DNS verification token, confirm verification, request URL indexing and submit a sitemap. The same operations are also available via JSON endpoints:
 
 - `POST /api/verify` to receive a verification token.
 - `POST /api/confirm` once the token is placed.
