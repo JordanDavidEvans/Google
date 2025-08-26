@@ -83,41 +83,58 @@ input { margin-right: 0.5rem; }
         return;
       }
 
-      const domainStep = document.createElement('div');
-      domainStep.className = 'step';
-      const domainTitle = document.createElement('h2');
-      domainTitle.textContent = 'Verify domain';
-      const domainInput = document.createElement('input');
-      domainInput.placeholder = 'example.com';
-      domainStep.append(domainTitle, domainInput);
+      const siteStep = document.createElement('div');
+      siteStep.className = 'step';
+      const siteTitle = document.createElement('h2');
+      siteTitle.textContent = 'Verify site';
+      const typeSelect = document.createElement('select');
+      const optDomain = new Option('Domain (DNS TXT)', 'INET_DOMAIN');
+      const optUrl = new Option('URL (HTML tag)', 'URL');
+      typeSelect.append(optDomain, optUrl);
+      const siteInput = document.createElement('input');
+      siteInput.placeholder = 'example.com';
+      typeSelect.onchange = () => {
+        siteInput.placeholder = typeSelect.value === 'INET_DOMAIN' ? 'example.com' : 'https://example.com/';
+      };
+      siteStep.append(siteTitle, typeSelect, siteInput);
 
       const tokenBtn = document.createElement('button');
-      tokenBtn.textContent = 'Get DNS token';
+      tokenBtn.textContent = 'Get verification token';
       const tokenOut = document.createElement('pre');
       tokenBtn.onclick = async () => {
-        const site = domainInput.value.trim();
-        if (!site) return alert('Enter domain');
-        const res = await api('https://www.googleapis.com/siteVerification/v1/token', {
+        const site = siteInput.value.trim();
+        const type = typeSelect.value;
+        if (!site) return alert('Enter site');
+        const method = type === 'INET_DOMAIN' ? 'DNS_TXT' : 'META';
+        const res = await api('https://www.googleapis.com/siteVerification/v1/token?verificationMethod=' + method, {
           method: 'POST',
-          body: JSON.stringify({ site: { identifier: site, type: 'INET_DOMAIN' } })
+          body: JSON.stringify({ site: { identifier: site, type } })
         });
-        tokenOut.textContent = res.token || (res.error && res.error.message) || 'Failed';
+        if (res.token) {
+          tokenOut.textContent = type === 'INET_DOMAIN'
+            ? res.token
+            : '<meta name="google-site-verification" content="' + res.token + '">';
+        } else {
+          tokenOut.textContent = (res.error && res.error.message) || 'Failed';
+        }
       };
-      domainStep.append(tokenBtn, tokenOut);
+      siteStep.append(tokenBtn, tokenOut);
 
       const confirmBtn = document.createElement('button');
       confirmBtn.textContent = 'Confirm verification';
       confirmBtn.onclick = async () => {
-        const site = domainInput.value.trim();
-        if (!site) return alert('Enter domain');
-        const res = await api('https://www.googleapis.com/siteVerification/v1/webResource?verificationMethod=DNS_TXT', {
+        const site = siteInput.value.trim();
+        const type = typeSelect.value;
+        if (!site) return alert('Enter site');
+        const method = type === 'INET_DOMAIN' ? 'DNS_TXT' : 'META';
+        const res = await api('https://www.googleapis.com/siteVerification/v1/webResource?verificationMethod=' + method, {
           method: 'POST',
-          body: JSON.stringify({ site: { identifier: site, type: 'INET_DOMAIN' } })
+          body: JSON.stringify({ site: { identifier: site, type } })
         });
         alert(res.error ? 'Verification failed' : 'Site verified');
       };
-      domainStep.append(confirmBtn);
-      app.append(domainStep);
+      siteStep.append(confirmBtn);
+      app.append(siteStep);
 
       const indexStep = document.createElement('div');
       indexStep.className = 'step';
@@ -148,7 +165,7 @@ input { margin-right: 0.5rem; }
       const sitemapBtn = document.createElement('button');
       sitemapBtn.textContent = 'Submit sitemap';
       sitemapBtn.onclick = async () => {
-        const domain = domainInput.value.trim();
+        const domain = siteInput.value.trim();
         const sitemap = sitemapInput.value.trim();
         if (!domain || !sitemap) return alert('Enter domain and sitemap');
         const site = 'sc-domain:' + domain;
@@ -168,7 +185,7 @@ input { margin-right: 0.5rem; }
       const inspectBtn = document.createElement('button');
       inspectBtn.textContent = 'Inspect URL';
       inspectBtn.onclick = async () => {
-        const domain = domainInput.value.trim();
+        const domain = siteInput.value.trim();
         const target = inspectInput.value.trim();
         if (!domain || !target) return alert('Enter domain and URL');
         const site = 'sc-domain:' + domain;

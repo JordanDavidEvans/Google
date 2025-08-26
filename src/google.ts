@@ -54,7 +54,8 @@ export async function refresh(env: Env, refresh_token: string) {
 // and retries; here we provide simplified versions.
 
 export async function getVerificationToken(accessToken: string, site: string, type: 'INET_DOMAIN' | 'URL'): Promise<ApiResponse> {
-  const res = await fetch(`${SITEVERIFICATION}/token`, {
+  const method = type === 'INET_DOMAIN' ? 'DNS_TXT' : 'META';
+  const res = await fetch(`${SITEVERIFICATION}/token?verificationMethod=${method}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ site: { identifier: site, type } })
@@ -65,7 +66,8 @@ export async function getVerificationToken(accessToken: string, site: string, ty
 }
 
 export async function verifySite(accessToken: string, site: string, type: 'INET_DOMAIN' | 'URL'): Promise<ApiResponse> {
-  const res = await fetch(`${SITEVERIFICATION}/webResource?verificationMethod=DNS_TXT`, {
+  const method = type === 'INET_DOMAIN' ? 'DNS_TXT' : 'META';
+  const res = await fetch(`${SITEVERIFICATION}/webResource?verificationMethod=${method}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ site: { identifier: site, type } })
