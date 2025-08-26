@@ -106,9 +106,10 @@ input { margin-right: 0.5rem; }
         const type = typeSelect.value;
         if (!site) return alert('Enter site');
         const method = type === 'DOMAIN' ? 'DNS_TXT' : 'META';
+        const siteType = type === 'DOMAIN' ? 'INET_DOMAIN' : 'SITE';
         const res = await api('https://www.googleapis.com/siteVerification/v1/token?verificationMethod=' + method, {
           method: 'POST',
-          body: JSON.stringify({ site: { identifier: site, type } })
+          body: JSON.stringify({ site: { identifier: site, type: siteType } })
         });
         if (res.token) {
           tokenOut.textContent = type === 'DOMAIN'
@@ -127,9 +128,10 @@ input { margin-right: 0.5rem; }
         const type = typeSelect.value;
         if (!site) return alert('Enter site');
         const method = type === 'DOMAIN' ? 'DNS_TXT' : 'META';
+        const siteType = type === 'DOMAIN' ? 'INET_DOMAIN' : 'SITE';
         const res = await api('https://www.googleapis.com/siteVerification/v1/webResource?verificationMethod=' + method, {
           method: 'POST',
-          body: JSON.stringify({ site: { identifier: site, type } })
+          body: JSON.stringify({ site: { identifier: site, type: siteType } })
         });
         alert(res.error ? 'Verification failed' : 'Site verified');
       };

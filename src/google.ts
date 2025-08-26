@@ -55,10 +55,11 @@ export async function refresh(env: Env, refresh_token: string) {
 
 export async function getVerificationToken(accessToken: string, site: string, type: 'DOMAIN' | 'URL_PREFIX'): Promise<ApiResponse> {
   const method = type === 'DOMAIN' ? 'DNS_TXT' : 'META';
+  const siteType = type === 'DOMAIN' ? 'INET_DOMAIN' : 'SITE';
   const res = await fetch(`${SITEVERIFICATION}/token?verificationMethod=${method}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ site: { identifier: site, type } })
+    body: JSON.stringify({ site: { identifier: site, type: siteType } })
   });
   if (!res.ok) return { success: false, summary: 'Failed to obtain token', details: await res.json() };
   const data = await res.json();
@@ -67,10 +68,11 @@ export async function getVerificationToken(accessToken: string, site: string, ty
 
 export async function verifySite(accessToken: string, site: string, type: 'DOMAIN' | 'URL_PREFIX'): Promise<ApiResponse> {
   const method = type === 'DOMAIN' ? 'DNS_TXT' : 'META';
+  const siteType = type === 'DOMAIN' ? 'INET_DOMAIN' : 'SITE';
   const res = await fetch(`${SITEVERIFICATION}/webResource?verificationMethod=${method}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ site: { identifier: site, type } })
+    body: JSON.stringify({ site: { identifier: site, type: siteType } })
   });
   if (!res.ok) return { success: false, summary: 'Verification failed', details: await res.json() };
   return { success: true, summary: 'Site verified', details: await res.json() };
