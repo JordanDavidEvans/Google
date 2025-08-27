@@ -175,7 +175,59 @@ input { margin-right: 0.5rem; }
         const res = await api('https://searchconsole.googleapis.com/v1/sites/' + encodeURIComponent(site) + '/sitemaps/' + encodeURIComponent(sitemap), { method: 'PUT' });
         alert(res.error ? 'Sitemap submission failed' : 'Sitemap submitted');
       };
-      sitemapStep.append(sitemapTitle, sitemapInput, sitemapBtn);
+
+      // Allow bulk indexing of sitemap URLs with progress
+      const indexMapBtn = document.createElement('button');
+      indexMapBtn.textContent = 'Index sitemap URLs';
+      const progressEl = document.createElement('progress');
+      progressEl.value = 0;
+      progressEl.max = 0;
+      progressEl.style.display = 'block';
+      progressEl.style.marginTop = '0.5rem';
+      const logEl = document.createElement('pre');
+      logEl.style.maxHeight = '10rem';
+      logEl.style.overflowY = 'auto';
+      indexMapBtn.onclick = async () => {
+        const sitemap = sitemapInput.value.trim();
+        if (!sitemap) return alert('Enter sitemap');
+        indexMapBtn.disabled = true;
+        progressEl.value = 0;
+        progressEl.max = 0;
+        logEl.textContent = '';
+        try {
+          const res = await fetch(sitemap);
+          const xml = await res.text();
+          const doc = new DOMParser().parseFromString(xml, 'application/xml');
+          const locs = Array.from(doc.getElementsByTagName('loc'));
+          const urls = locs.map(l => l.textContent?.trim()).filter(Boolean) as string[];
+          if (!urls.length) {
+            logEl.textContent = 'No URLs found';
+            return;
+          }
+          progressEl.max = urls.length;
+          for (let i = 0; i < urls.length; i++) {
+            const url = urls[i];
+            logEl.textContent += 'Indexing ' + url + '\n';
+            const r = await api('https://indexing.googleapis.com/v3/urlNotifications:publish', {
+              method: 'POST',
+              body: JSON.stringify({ url, type: 'URL_UPDATED' })
+            });
+            if (r.error) {
+              logEl.textContent += '  Failed: ' + (r.error.message || r.error) + '\n';
+            } else {
+              logEl.textContent += '  OK\n';
+            }
+            progressEl.value = i + 1;
+          }
+          logEl.textContent += 'Done';
+        } catch (err) {
+          logEl.textContent += 'Error: ' + err.message;
+        } finally {
+          indexMapBtn.disabled = false;
+        }
+      };
+
+      sitemapStep.append(sitemapTitle, sitemapInput, sitemapBtn, indexMapBtn, progressEl, logEl);
       app.append(sitemapStep);
 
       const inspectStep = document.createElement('div');
