@@ -11,11 +11,13 @@ It is deliberately minimal and friendly. Each step returns human‑readable summ
 3. Bind a KV namespace named `TOKENS` for storing user tokens.
 4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in your worker environment.
 5. Run `wrangler publish`.
+6. The worker performs OAuth token exchanges server-side so your client secret never appears in the browser.
 
 ## Using
 
 Visit the worker URL. The page invites you to connect a Google account. After OAuth completes, simple controls appear to fetch a DNS verification token, confirm verification, request URL indexing, submit a sitemap, and bulk index every URL in a sitemap with progress feedback. The same operations are also available via JSON endpoints:
 
+- `POST /api/token` to exchange an authorization code for tokens.
 - `POST /api/verify` to receive a verification token.
 - `POST /api/confirm` once the token is placed.
 - `POST /api/property` to add the site to Search Console.

@@ -20,7 +20,6 @@ input { margin-right: 0.5rem; }
   <script type="module">
     (async () => {
     const CLIENT_ID = '${env.GOOGLE_CLIENT_ID}';
-    const CLIENT_SECRET = '${env.GOOGLE_CLIENT_SECRET}';
     const REDIRECT_URI = window.location.origin + '/';
 
     const logEl = document.createElement('pre');
@@ -34,14 +33,11 @@ input { margin-right: 0.5rem; }
 
     async function exchange(code) {
       log('Exchanging authorization code');
-      const body = new URLSearchParams({
-        code,
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        redirect_uri: REDIRECT_URI,
-        grant_type: 'authorization_code'
+      const res = await fetch('/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, redirect_uri: REDIRECT_URI })
       });
-      const res = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', body });
       if (!res.ok) throw new Error('token exchange failed');
       const data = await res.json();
       log('Token response: ' + JSON.stringify(data));
