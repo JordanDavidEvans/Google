@@ -18,6 +18,7 @@ input { margin-right: 0.5rem; }
   <p>This helper walks you through connecting your site to Google Search Console without a separate API layer.</p>
   <div id="app"></div>
   <script type="module">
+    (async () => {
     const CLIENT_ID = '${env.GOOGLE_CLIENT_ID}';
     const CLIENT_SECRET = '${env.GOOGLE_CLIENT_SECRET}';
     const REDIRECT_URI = window.location.origin + '/';
@@ -274,6 +275,7 @@ input { margin-right: 0.5rem; }
     }
 
     render();
+    })();
   </script>
 </body>
 </html>`;
