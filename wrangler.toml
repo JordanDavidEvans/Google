@@ -1,4 +1,4 @@
-name = "google-worker"
+name = "google"
 main = "dist/index.js"
 compatibility_date = "2024-05-01"
 
