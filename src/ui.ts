@@ -22,7 +22,17 @@ input { margin-right: 0.5rem; }
     const CLIENT_SECRET = '${env.GOOGLE_CLIENT_SECRET}';
     const REDIRECT_URI = window.location.origin + '/';
 
+    const logEl = document.createElement('pre');
+    logEl.style.background = '#eee';
+    logEl.style.padding = '0.5rem';
+    document.body.append(logEl);
+    function log(msg) {
+      console.log(msg);
+      logEl.textContent += msg + '\n';
+    }
+
     async function exchange(code) {
+      log('Exchanging authorization code');
       const body = new URLSearchParams({
         code,
         client_id: CLIENT_ID,
@@ -32,18 +42,22 @@ input { margin-right: 0.5rem; }
       });
       const res = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', body });
       if (!res.ok) throw new Error('token exchange failed');
-      return res.json();
+      const data = await res.json();
+      log('Token response: ' + JSON.stringify(data));
+      return data;
     }
 
     let tokens = JSON.parse(localStorage.getItem('tokens') || 'null');
+    log('Tokens loaded: ' + (tokens ? 'yes' : 'no'));
     const params = new URLSearchParams(window.location.search);
     if (!tokens && params.get('code')) {
       try {
         tokens = await exchange(params.get('code'));
         localStorage.setItem('tokens', JSON.stringify(tokens));
+        log('Tokens stored');
         window.history.replaceState({}, '', '/');
       } catch (err) {
-        console.error(err);
+        log('Exchange failed: ' + err.message);
       }
     }
 
@@ -52,23 +66,28 @@ input { margin-right: 0.5rem; }
     }
 
     async function api(url, opts) {
+      log('API request: ' + url);
       opts = opts || {};
       opts.headers = Object.assign({
         'Authorization': 'Bearer ' + tokens.access_token,
         'Content-Type': 'application/json'
       }, opts.headers || {});
       const res = await fetch(url, opts);
-      return res.json();
+      const data = await res.json();
+      log('API response: ' + JSON.stringify(data));
+      return data;
     }
 
     const app = document.getElementById('app');
 
     function render() {
+      log('Rendering UI');
       app.innerHTML = '';
       if (!authed()) {
         const btn = document.createElement('button');
-        btn.textContent = 'Connect Google account';
+        btn.textContent = 'Sign in with Google';
         btn.onclick = () => {
+          log('Redirecting to Google OAuth');
           const p = new URLSearchParams({
             client_id: CLIENT_ID,
             redirect_uri: REDIRECT_URI,
@@ -184,16 +203,16 @@ input { margin-right: 0.5rem; }
       progressEl.max = 0;
       progressEl.style.display = 'block';
       progressEl.style.marginTop = '0.5rem';
-      const logEl = document.createElement('pre');
-      logEl.style.maxHeight = '10rem';
-      logEl.style.overflowY = 'auto';
+      const sitemapLogEl = document.createElement('pre');
+      sitemapLogEl.style.maxHeight = '10rem';
+      sitemapLogEl.style.overflowY = 'auto';
       indexMapBtn.onclick = async () => {
         const sitemap = sitemapInput.value.trim();
         if (!sitemap) return alert('Enter sitemap');
         indexMapBtn.disabled = true;
         progressEl.value = 0;
         progressEl.max = 0;
-        logEl.textContent = '';
+        sitemapLogEl.textContent = '';
         try {
           const res = await fetch(sitemap);
           const xml = await res.text();
@@ -201,33 +220,33 @@ input { margin-right: 0.5rem; }
           const locs = Array.from(doc.getElementsByTagName('loc'));
           const urls = locs.map(l => l.textContent?.trim()).filter(Boolean) as string[];
           if (!urls.length) {
-            logEl.textContent = 'No URLs found';
+            sitemapLogEl.textContent = 'No URLs found';
             return;
           }
           progressEl.max = urls.length;
           for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
-            logEl.textContent += 'Indexing ' + url + '\n';
+            sitemapLogEl.textContent += 'Indexing ' + url + '\n';
             const r = await api('https://indexing.googleapis.com/v3/urlNotifications:publish', {
               method: 'POST',
               body: JSON.stringify({ url, type: 'URL_UPDATED' })
             });
             if (r.error) {
-              logEl.textContent += '  Failed: ' + (r.error.message || r.error) + '\n';
+              sitemapLogEl.textContent += '  Failed: ' + (r.error.message || r.error) + '\n';
             } else {
-              logEl.textContent += '  OK\n';
+              sitemapLogEl.textContent += '  OK\n';
             }
             progressEl.value = i + 1;
           }
-          logEl.textContent += 'Done';
+          sitemapLogEl.textContent += 'Done';
         } catch (err) {
-          logEl.textContent += 'Error: ' + err.message;
+          sitemapLogEl.textContent += 'Error: ' + err.message;
         } finally {
           indexMapBtn.disabled = false;
         }
       };
 
-      sitemapStep.append(sitemapTitle, sitemapInput, sitemapBtn, indexMapBtn, progressEl, logEl);
+      sitemapStep.append(sitemapTitle, sitemapInput, sitemapBtn, indexMapBtn, progressEl, sitemapLogEl);
       app.append(sitemapStep);
 
       const inspectStep = document.createElement('div');
